@@ -85,3 +85,59 @@ const state = useSelector(state => state.navBar)
 
 
 ```
+
+#
+
+### Async Redux using Redux ToolKit
+
+```js
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
+export const fetchApi = createApi({
+    reducerPath: 'fetchingData',
+    baseQuery: fetchBaseQuery({ baseUrl: '' }),
+    endpoints: (builder) => ({
+        getFetch: builder.query({
+            query: (input) => `${input}`,
+        }),
+    }),
+})
+
+export const { useGetFetchQuery } = fetchApi
+
+```
+
+### App.js
+
+import `fetchApi` from the slice    
+`fetchApi.useGetQuery` is called automatically, to stop this we can use a boolean 'skip'.    
+When `skip` is `true` it is not automatically called.    
+When `skip` changes to false the fetch is made.    
+
+```js
+import { fetchApi } from './slices/peopleSlice';
+
+const App = () => {
+  const [skip, setSkip] = useState(true)
+  const { data, error, isLoading } = fetchApi.useGetFetchQuery('https://jsonplaceholder.typicode.com/todos', { skip }) 
+  
+  <button onClick={() => setSkip(false)}>
+    Start Fetch!
+  </button>
+}
+
+```
+
+### store.js
+
+```js 
+import { fetchApi } from './slices/peopleSlice'
+
+export default configureStore({
+    reducer: {
+        people: peopleSlice,
+        [fetchApi.reducerPath]: fetchApi.reducer,
+    },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(fetchApi.middleware),
+})
+```
